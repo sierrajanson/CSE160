@@ -86,20 +86,24 @@ function handleDrawOperationEvent() {
   switch (operation) {
     case 'add':
       v1.add(v2);
+      drawVector(v1, "green");
       break;
     case 'sub':
       v1.sub(v2);
+      drawVector(v1, "green");
       break;
     case 'mul':
       const scalar = document.getElementById('scalar').value;
       v1.mul(scalar);
       v2.mul(scalar);
+      drawVector(v1, "green");
       drawVector(v2, "green");
       break;
     case 'div':
       const scalar2 = document.getElementById('scalar').value;
       v1.div(scalar2);
       v2.div(scalar2);
+      drawVector(v1, "green");
       drawVector(v2, "green");
       break;
     case 'mag':
@@ -111,6 +115,7 @@ function handleDrawOperationEvent() {
     case 'nor':
       v1.normalize();
       v2.normalize();
+      drawVector(v1, "green");
       drawVector(v2, "green");
       break;
     case 'ang':
@@ -123,5 +128,4 @@ function handleDrawOperationEvent() {
     default:
       break
   }
-  drawVector(v1, "green");
 }
