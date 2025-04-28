@@ -11,17 +11,27 @@
     </canvas>
 <br></br>
     <p id="logging"></p>
+    <p><b>X-Wing 3D "Animal" (from Star Wars)</b></p>
+    <p>(If it is vital that the 3D Animal actually has to be an animal, one can also view it as a butterfly)</p>
+    <p>Shift + Click for rollover animation!</p>
+    <p>Click around/drag mouse to move the ship</p>
     <br></br>
     <button type="button" id="clearButton">Clear</button>
     <button type="button" id="startAnimation">Start Animation</button>
     <button type="button" id="endAnimation">End Animation</button>
 
     <p>
-      Camera Angle <input type="range" min="0" max="180" value="0" class="slider" id="angleSlide">
+      Camera Angle <input type="range" min="-180" max="180" value="20" class="slider" id="angleSlide">
     </p>
     <p>
-      Middle Angle <input type="range" min="-45" max="45" value="0" class="slider" id="midSlide">
+      Wing Angle <input type="range" min="0" max="70" value="70" class="slider" id="midSlide">
     </p>
+    <p>
+      Gun Angle <input type="range" min="0" max="15" value="0" class="slider" id="gunSlide">
+    </p>
+    <br></br>
+    <p>If something becomes buggy for some reason, refresh the page to reset.</p>
+
     <script src="../lib/webgl-utils.js"></script>
     <script src="../lib/webgl-debug.js"></script>
     <script src="../lib/cuon-utils.js"></script>
