@@ -1,8 +1,8 @@
-class Cube{
+class Parallelpiped{
     constructor(){
-        this.type='cube';
+        this.type='parallelpiped';
         this.color=[1.0,1.0,1.0,1.0];
-        this.pinch = 1;
+        this.pinch = 0.7;
         this.heightPinch = 1;
         // this.segments = 10;
         this.matrix = new Matrix4();
@@ -78,9 +78,7 @@ class Cube{
     }
 }
 
+// drawCube(vertices) {
 
-function drawCube(M) {
-    var c = new Cube();
-    c.matrix = M;
-    c.render();
-}
+
+// }

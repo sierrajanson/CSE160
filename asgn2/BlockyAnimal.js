@@ -72,18 +72,18 @@ let gunSlideAngle = 1;
 let animationOn = false;
 let poke = false;
 function addActionsForHtmlUI(){
-    document.getElementById('clearButton').onclick = function(){g_shapesList = []; renderAllShapes(); console.log('clear');}; 
+    document.getElementById('clearButton').onclick = function(){g_shapesList = []; renderScene(); console.log('clear');}; 
     document.getElementById('angleSlide').addEventListener('mousemove', function(){
       g_globalAngleX = this.value;
-      renderAllShapes();
+      renderScene();
     });
     document.getElementById('midSlide').addEventListener('mousemove', function(){
       midSlideAngle = this.value;
-      renderAllShapes();
+      renderScene();
     });
     document.getElementById('gunSlide').addEventListener('mousemove', function(){
       gunSlideAngle = this.value;
-      renderAllShapes();
+      renderScene();
     });
     document.getElementById('startAnimation').onclick = function(){animationOn=true;}; 
     document.getElementById('endAnimation').onclick = function(){animationOn=false}; 
@@ -124,7 +124,7 @@ function tick() {
   g_seconds = performance.now()/1000.0 - g_startTime;
   // console.log(g_seconds);
   updateAnimationAngles();
-  renderAllShapes();
+  renderScene();
   requestAnimationFrame(tick);
 }
 
@@ -165,7 +165,7 @@ function sendTextToHTML(text, htmlID) {
   htmlElm.innerHTML = text;
 }
 
-function renderAllShapes(){
+function renderScene(){
   var startTime = performance.now();
   var globalRotMat = new Matrix4().rotate(g_globalAngleX, g_globalAngleY, 1, g_globalAngleZ);
   gl.uniformMatrix4fv(u_GlobalRotateMatrix, false, globalRotMat.elements);
@@ -175,7 +175,7 @@ function renderAllShapes(){
   //   g_shapesList[i].render();
   // }
 
-  var base = new Cube();
+  var base = new Parallelpiped();
   base.color = [0.8,0.8,0.8,1];
   base.matrix.translate(0,-0.5,0);
   base.pinch = 0.3;
@@ -185,7 +185,7 @@ function renderAllShapes(){
   base.render();
   var pinch = 0.4;
   var color = [1,1,1,1];
-  var leftTopWing = new Cube();
+  var leftTopWing = new Parallelpiped();
   leftTopWing.pinch = pinch;
   leftTopWing.heightPinch = 0.25;
   // operations done bottom to up?
@@ -197,7 +197,7 @@ function renderAllShapes(){
   var leftTopWingMat = new Matrix4(leftTopWing.matrix);
   leftTopWing.render();
 
-  var leftBottomWing = new Cube();
+  var leftBottomWing = new Parallelpiped();
   leftBottomWing.heightPinch = 0.15;
   leftBottomWing.pinch = pinch;
   // operations done bottom to up?
@@ -209,7 +209,7 @@ function renderAllShapes(){
   var leftBottomWingMat = new Matrix4(leftBottomWing.matrix);
   leftBottomWing.render();
 
-  var rightTopWing = new Cube();
+  var rightTopWing = new Parallelpiped();
   rightTopWing.pinch = pinch;
   rightTopWing.heightPinch = 0.15;
   // operations done bottom to up?
@@ -221,7 +221,7 @@ function renderAllShapes(){
   var rightTopWingMat = new Matrix4(rightTopWing.matrix);
   rightTopWing.render();
 
-  var rightBottomWing = new Cube();
+  var rightBottomWing = new Parallelpiped();
   rightBottomWing.pinch = pinch;
   rightBottomWing.heightPinch = 0.15;
   // operations done bottom to up?
@@ -235,7 +235,7 @@ function renderAllShapes(){
 
   pinch = 1;
   color = [0.4,0.4,0.4,1];
-  var topLeftGun = new Cube();
+  var topLeftGun = new Parallelpiped();
   topLeftGun.pinch = pinch;
   topLeftGun.color = color;
   topLeftGun.matrix.rotate(gunSlideAngle,gunSlideAngle,0,0);
@@ -245,7 +245,7 @@ function renderAllShapes(){
   topLeftGun.matrix.translate(-17,1.0,-0.25);
   topLeftGun.render();
 
-  var bottomLeftGun = new Cube();
+  var bottomLeftGun = new Parallelpiped();
   bottomLeftGun.pinch = pinch;
   bottomLeftGun.color = color;
   bottomLeftGun.matrix.rotate(gunSlideAngle,gunSlideAngle,0,0);
@@ -255,17 +255,18 @@ function renderAllShapes(){
   bottomLeftGun.matrix.translate(-17,-1.0,-0.25);
   bottomLeftGun.render();
 
-  var topRightGun = new Cube();
+  var topRightGun = new Parallelpiped();
   topRightGun.pinch = pinch;
   topRightGun.color = color;
   topRightGun.matrix.rotate(gunSlideAngle,gunSlideAngle,0,0);
   topRightGun.matrix = rightTopWingMat;
   topRightGun.matrix.rotate(gunSlideAngle,gunSlideAngle,0,0);
+  var topRightGunMat = new Matrix4(topRightGun.matrix);
   topRightGun.matrix.scale(.03,.1,1.25);
   topRightGun.matrix.translate(-17,1.0,-0.25);
   topRightGun.render();
 
-  var bottomRightGun = new Cube();
+  var bottomRightGun = new Parallelpiped();
   bottomRightGun.pinch = pinch;
   bottomRightGun.color = color;
   bottomRightGun.matrix.rotate(gunSlideAngle,gunSlideAngle,0,0);
@@ -275,6 +276,15 @@ function renderAllShapes(){
   bottomRightGun.matrix.translate(-17,-1.0,-0.25);
   bottomRightGun.render();
 
+  var topRightGunCube = new Cube();
+  topRightGunCube.pinch = 1;
+  topRightGunCube.matrix = topRightGunMat;
+  topRightGunCube.matrix.translate(0,0.2,0);
+  topRightGunCube.color = [1,0,0,1];
+  topRightGunCube.matrix.scale(0.1,0.2,0.1);
+  topRightGunCube.render();
+  
+
   var duration = performance.now() - startTime;
   sendTextToHTML(" ms: " + Math.floor(duration) + " fps: " + Math.floor(1000/duration), 'logging');
 }
@@ -283,5 +293,5 @@ function click(ev) {
   let [x,y] = convertCoordinatesEventToGL(ev);
   g_globalAngleX = x*36;
   g_globalAngleY = y*36;
-  renderAllShapes();
+  renderScene();
 }
