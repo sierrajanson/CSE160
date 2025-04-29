@@ -241,6 +241,7 @@ function renderScene(){
   topLeftGun.matrix.rotate(gunSlideAngle,gunSlideAngle,0,0);
   topLeftGun.matrix = leftTopWingMat; //gunSlideAngle
   topLeftGun.matrix.rotate(gunSlideAngle,gunSlideAngle,0,0);
+  var topLeftGunMat = new Matrix4(topLeftGun.matrix);
   topLeftGun.matrix.scale(.03,.1,1.25);
   topLeftGun.matrix.translate(-17,1.0,-0.25);
   topLeftGun.render();
@@ -279,10 +280,18 @@ function renderScene(){
   var topRightGunCube = new Cube();
   topRightGunCube.pinch = 1;
   topRightGunCube.matrix = topRightGunMat;
-  topRightGunCube.matrix.translate(0,0.2,0);
+  topRightGunCube.matrix.translate(-0.5,0.2,-1);
   topRightGunCube.color = [1,0,0,1];
-  topRightGunCube.matrix.scale(0.1,0.2,0.1);
+  topRightGunCube.matrix.scale(0.1,0.3,0.1);
   topRightGunCube.render();
+
+  var topLeftGunCube = new Cube();
+  topLeftGunCube.pinch = 1;
+  topLeftGunCube.matrix = topLeftGunMat;
+  topLeftGunCube.matrix.translate(-0.5,0.2,-1);
+  topLeftGunCube.color = [1,0,0,1];
+  topLeftGunCube.matrix.scale(0.1,0.3,0.1);
+  topLeftGunCube.render();
   
 
   var duration = performance.now() - startTime;
