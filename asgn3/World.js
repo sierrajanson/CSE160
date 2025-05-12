@@ -23,6 +23,7 @@ const FSHADER_SOURCE = `
   varying vec2 v_UV;
   uniform vec4 u_FragColor;
   uniform sampler2D u_Sampler0;
+  uniform sampler2D u_Sampler1;
   uniform int u_whichTexture;
   void main() {
     if (u_whichTexture == -2) {
@@ -31,7 +32,9 @@ const FSHADER_SOURCE = `
       gl_FragColor = vec4(v_UV,1,1.0); // use uv debug color
     } else if (u_whichTexture == 0) {
       gl_FragColor = texture2D(u_Sampler0,v_UV); //use texture0
-    } else {
+    } else if (u_whichTexture == 1) {
+      gl_FragColor = texture2D(u_Sampler1, v_UV);
+     } else {
       gl_FragColor = vec4(1,.2,.2,1); // Error --> red-ish
     }
   }`;
@@ -47,6 +50,8 @@ let u_ProjectionMatrix;
 let u_ViewMatrix;
 let u_GlobalRotateMatrix;
 let u_Sampler0;
+let u_Sampler1;
+let camera;
 
 function setupWebGL() {
     canvas = document.getElementById('webgl');
@@ -95,6 +100,11 @@ function connectVariablesToGLSL() {
       console.log('Failed to get the storage location of u_Sampler0');
       return false;
     }
+    u_Sampler1 = gl.getUniformLocation(gl.program, 'u_Sampler1');
+    if (!u_Sampler1) {
+      console.log('Failed to get the storage location of u_Sampler1');
+      return false;
+    }
     u_whichTexture = gl.getUniformLocation(gl.program, 'u_whichTexture');
     if (!u_whichTexture) {
       console.log('Failed to get the storage location of u_whichTexture');
@@ -128,21 +138,10 @@ let gunSlideAngle = 1;
 let animationOn = false;
 let poke = false;
 function addActionsForHtmlUI(){
-  document.getElementById('clearButton').onclick = function(){g_shapesList = []; renderScene(); console.log('clear');}; 
   document.getElementById('angleSlide').addEventListener('mousemove', function(){
     g_globalAngleX = this.value;
     renderScene();
   });
-  document.getElementById('midSlide').addEventListener('mousemove', function(){
-    midSlideAngle = this.value;
-    renderScene();
-  });
-  document.getElementById('gunSlide').addEventListener('mousemove', function(){
-    gunSlideAngle = this.value;
-    renderScene();
-  });
-  document.getElementById('startAnimation').onclick = function(){animationOn=true;}; 
-  document.getElementById('endAnimation').onclick = function(){animationOn=false}; 
   document.addEventListener('click', function(event) {
     if (event.shiftKey) {
       poke = true;
@@ -191,7 +190,10 @@ function main() {
   canvas.onmousedown = function(ev){click(ev)};
   canvas.onmousemove = function(ev){if(ev.buttons==1){click(ev)}};
   // Specify the color for clearing <canvas>
+  document.onkeydown = keydown;
+
   initTextures();
+  camera = new Camera();
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   
   // Clear <canvas>
@@ -200,21 +202,48 @@ function main() {
 }
 
 function initTextures() {
-  // Get the storage location of u_Sampler
   var image = new Image();  // Create the image object
   if (!image) {
     console.log('Failed to create the image object');
     return false;
   }
   // Register the event handler to be called on loading an image
-  image.onload = function(){ sendImageToTEXTURE0(image); };
+  image.onload = function(){ sendImageToTEXTURE(image,0); };
   // Tell the browser to load an image
   image.src = "sky.jpg";
+  // i don't think I'm loading both these textures right..
+  var groundImage = new Image();  // Create the image object
+  if (!groundImage) {
+    console.log('Failed to create the groundImage object');
+    return false;
+  }
+  // // Register the event handler to be called on loading an image
+  groundImage.onload = function(){ sendImageToTEXTURE(groundImage,1); };
+  // // Tell the browser to load an image
+  groundImage.src = "grass.jpg";
   // add more textures later (have case statements)
   return true;
 }
+//w : 87
+//a : 65
+//d : 68
+//s : 83
+//q : 81
+//e : 69
+function keydown(ev) {
+  switch (ev.keyCode) { 
+    case 87: // w
+      camera.forward();
+      break;
+    case 83:
+      camera.backward();
+      break;
+  }
+  renderScene();
+  console.log(ev.keyCode);
+}
 
-function sendImageToTEXTURE0(image) {
+function sendImageToTEXTURE(image, num) {
   var texture = gl.createTexture();   // Create a texture object
   if (!texture) {
     console.log('Failed to create the texture object');
@@ -222,17 +251,20 @@ function sendImageToTEXTURE0(image) {
   }
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
   // Enable texture unit0
-  gl.activeTexture(gl.TEXTURE0);
+  gl.activeTexture(gl.TEXTURE0+num);
   // Bind the texture object to the target
   gl.bindTexture(gl.TEXTURE_2D, texture);
 
-  // Set the texture parameters
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  // Set the texture image
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
-  
+  gl.generateMipmap(gl.TEXTURE_2D);
+
   // Set the texture unit 0 to the sampler
-  gl.uniform1i(u_Sampler0, 0);
+  if (num === 0){
+    gl.uniform1i(u_Sampler0, num);
+  } else if (num === 1) {
+    gl.uniform1i(u_Sampler1, num);
+  }
   console.log('finished loadTexture');
   // gl.clear(gl.COLOR_BUFFER_BITs);   // Clear <canvas>
 
@@ -262,9 +294,6 @@ function sendTextToHTML(text, htmlID) {
   htmlElm.innerHTML = text;
 }
 
-var g_eye = [0,0,3];
-var g_at = [0,0,-100];
-var g_up = [0,1,0];
 
 function renderScene(){
   var startTime = performance.now();
@@ -272,8 +301,12 @@ function renderScene(){
   projMat.setPerspective(60, canvas.width/canvas.height, .1, 100); // deg, aspect, near, far
   gl.uniformMatrix4fv(u_ProjectionMatrix, false, projMat.elements);
 
+  var g_eye = camera.getEye();
+  var g_at = camera.getAt();
+  var g_up = camera.getUp();
   var viewMat = new Matrix4();
   viewMat.setLookAt(g_eye[0],g_eye[1],g_eye[2], g_at[0],g_at[1],g_at[2], g_up[0],g_up[1],g_up[2]); // eye, at, up
+  console.log(g_eye[0]);
   gl.uniformMatrix4fv(u_ViewMatrix, false, viewMat.elements);
   
   var globalRotMat = new Matrix4().rotate(g_globalAngleX, 0, 1, 0);
@@ -284,8 +317,18 @@ function renderScene(){
   // for(var i = 0; i < g_shapesList.length; i++) {
   //   g_shapesList[i].render();
   // }
-  var c = new Cube();
+
+  var floor = new Cube(1);
+  floor.color = [0,1,0,1];
+  // floor.textureNum = 1;/
+  floor.matrix.translate(0,-0.75,0);
+  floor.matrix.scale(10,0,10);
+  floor.matrix.translate(-.5,0,-0.5);
+  floor.render();
+
+  var c = new Cube(0);
   c.color = [1,1,0,1];
+  // c.textureNum = 0;
   c.matrix.scale(0.25,0.25,0.25);
   c.render();
   // non image textures will load first, others after
