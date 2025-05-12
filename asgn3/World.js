@@ -24,6 +24,8 @@ const FSHADER_SOURCE = `
   uniform vec4 u_FragColor;
   uniform sampler2D u_Sampler0;
   uniform sampler2D u_Sampler1;
+  uniform sampler2D u_Sampler2;
+  uniform sampler2D u_Sampler3;
   uniform int u_whichTexture;
   void main() {
     if (u_whichTexture == -2) {
@@ -34,6 +36,10 @@ const FSHADER_SOURCE = `
       gl_FragColor = texture2D(u_Sampler0,v_UV); //use texture0
     } else if (u_whichTexture == 1) {
       gl_FragColor = texture2D(u_Sampler1, v_UV);
+     } else if (u_whichTexture == 2) {
+      gl_FragColor = texture2D(u_Sampler2, v_UV);
+     } else if (u_whichTexture == 3) {
+      gl_FragColor = texture2D(u_Sampler3, v_UV);
      } else {
       gl_FragColor = vec4(1,.2,.2,1); // Error --> red-ish
     }
@@ -51,6 +57,8 @@ let u_ViewMatrix;
 let u_GlobalRotateMatrix;
 let u_Sampler0;
 let u_Sampler1;
+let u_Sampler2;
+let u_Sampler3;
 let camera;
 
 function setupWebGL() {
@@ -105,6 +113,16 @@ function connectVariablesToGLSL() {
       console.log('Failed to get the storage location of u_Sampler1');
       return false;
     }
+    u_Sampler2 = gl.getUniformLocation(gl.program, 'u_Sampler2');
+    if (!u_Sampler2) {
+      console.log('Failed to get the storage location of u_Sampler2');
+      return false;
+    }
+    u_Sampler3 = gl.getUniformLocation(gl.program, 'u_Sampler3');
+    if (!u_Sampler3) {
+      console.log('Failed to get the storage location of u_Sampler3');
+      return false;
+    }
     u_whichTexture = gl.getUniformLocation(gl.program, 'u_whichTexture');
     if (!u_whichTexture) {
       console.log('Failed to get the storage location of u_whichTexture');
@@ -138,8 +156,10 @@ let gunSlideAngle = 1;
 let animationOn = false;
 let poke = false;
 function addActionsForHtmlUI(){
-  document.getElementById('angleSlide').addEventListener('mousemove', function(){
-    g_globalAngleX = this.value;
+  document.addEventListener('mousemove', (e) => camera.onMouseMove(e));
+  document.getElementById('angleSlide').addEventListener('mousemove', function(ev){
+    // g_globalAngleX = this.value;
+
     renderScene();
   });
   document.addEventListener('click', function(event) {
@@ -221,6 +241,26 @@ function initTextures() {
   groundImage.onload = function(){ sendImageToTEXTURE(groundImage,1); };
   // // Tell the browser to load an image
   groundImage.src = "grass.jpg";
+
+  var skyImage = new Image();  // Create the image object
+  if (!skyImage) {
+    console.log('Failed to create the skyImage object');
+    return false;
+  }
+  // // Register the event handler to be called on loading an image
+  skyImage.onload = function(){ sendImageToTEXTURE(skyImage,2); };
+  // // Tell the browser to load an image
+  skyImage.src = "sky_square.png";
+
+  var diamondImg = new Image();  // Create the image object
+  if (!diamondImg) {
+    console.log('Failed to create the diamondImg object');
+    return false;
+  }
+  // // Register the event handler to be called on loading an image
+  diamondImg.onload = function(){ sendImageToTEXTURE(diamondImg,3); };
+  // // Tell the browser to load an image
+  diamondImg.src = "diamond.png";
   // add more textures later (have case statements)
   return true;
 }
@@ -233,14 +273,31 @@ function initTextures() {
 function keydown(ev) {
   switch (ev.keyCode) { 
     case 87: // w
-      camera.forward();
+      camera.moveForward();
       break;
-    case 83:
-      camera.backward();
+    case 83: // s
+      camera.moveBackwards();
+      break;
+    case 68:
+      camera.moveRight();
+      break;
+    case 65: // l
+      camera.moveLeft();
+      break;
+    case 81:
+      camera.panLeft();
+      break;
+    case 69:
+      camera.panRight();
+      break;
+    case 32: // spacebar
+      camera.goUp();
+      break;
+    case 16: // shift
+      camera.goDown();
       break;
   }
   renderScene();
-  console.log(ev.keyCode);
 }
 
 function sendImageToTEXTURE(image, num) {
@@ -264,6 +321,10 @@ function sendImageToTEXTURE(image, num) {
     gl.uniform1i(u_Sampler0, num);
   } else if (num === 1) {
     gl.uniform1i(u_Sampler1, num);
+  } else if (num === 2) {
+    gl.uniform1i(u_Sampler2, num);
+  } else if (num === 3) {
+    gl.uniform1i(u_Sampler3, num);
   }
   console.log('finished loadTexture');
   // gl.clear(gl.COLOR_BUFFER_BITs);   // Clear <canvas>
@@ -294,11 +355,59 @@ function sendTextToHTML(text, htmlID) {
   htmlElm.innerHTML = text;
 }
 
+var g_map=[
+  [
+  [1,1,1,1,1,1,1,1],
+  [1,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,1],
+],
+  [
+  [1,0,0,1,1,1,1,1],
+  [1,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,1],
+],
+  [
+  [1,0,0,0,1,1,1,1],
+  [1,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,1],
+],
+];
+
+function drawMap() {
+  for (z=0; z<3; z++) {
+    for (x=0;x<8;x++) {
+      for (y=0; y< 8;y++) {
+        if (g_map[z][x][y] == 1){
+          var block = new Cube();
+          block.textureNum = 3;
+          block.matrix.translate(x-4,y-.75,z);
+          block.render();
+        }
+      }
+    }
+  }
+}
+
 
 function renderScene(){
   var startTime = performance.now();
   var projMat = new Matrix4();
-  projMat.setPerspective(60, canvas.width/canvas.height, .1, 100); // deg, aspect, near, far
+  projMat.setPerspective(90, canvas.width/canvas.height, .1, 100); // deg, aspect, near, far
   gl.uniformMatrix4fv(u_ProjectionMatrix, false, projMat.elements);
 
   var g_eye = camera.getEye();
@@ -306,7 +415,6 @@ function renderScene(){
   var g_up = camera.getUp();
   var viewMat = new Matrix4();
   viewMat.setLookAt(g_eye[0],g_eye[1],g_eye[2], g_at[0],g_at[1],g_at[2], g_up[0],g_up[1],g_up[2]); // eye, at, up
-  console.log(g_eye[0]);
   gl.uniformMatrix4fv(u_ViewMatrix, false, viewMat.elements);
   
   var globalRotMat = new Matrix4().rotate(g_globalAngleX, 0, 1, 0);
@@ -317,28 +425,29 @@ function renderScene(){
   // for(var i = 0; i < g_shapesList.length; i++) {
   //   g_shapesList[i].render();
   // }
+  var sky = new Cube();
+  sky.color = [1,0,0,1];
+  sky.textureNum=2;
+  sky.matrix.scale(50,50,50);
+  sky.matrix.translate(-.5,-.5,-.5);
+  sky.render();
 
   var floor = new Cube(1);
   floor.color = [0,1,0,1];
   // floor.textureNum = 1;/
   floor.matrix.translate(0,-0.75,0);
-  floor.matrix.scale(10,0,10);
+  floor.matrix.scale(50,0,50);
   floor.matrix.translate(-.5,0,-0.5);
   floor.render();
 
-  var c = new Cube(0);
-  c.color = [1,1,0,1];
-  // c.textureNum = 0;
-  c.matrix.scale(0.25,0.25,0.25);
-  c.render();
   // non image textures will load first, others after
-  var b = new Cube();
+  var b = new Cube(); // rainbow
   b.color = [1,0,1,1];
-  b.matrix.translate(-.1,.1,0,0);
-  b.matrix.rotate(-30,1,0,0);
+  b.matrix.translate(-0.8,7.8,0.8,0);
   b.matrix.scale(.2,.4,.2);
   b.textureNum = -1;
   b.render();
+  drawMap();
   var duration = performance.now() - startTime;
   sendTextToHTML(" ms: " + Math.floor(duration) + " fps: " + Math.floor(1000/duration), 'logging');
 }
