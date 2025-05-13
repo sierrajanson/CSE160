@@ -1,6 +1,6 @@
 class Camera {
     constructor() {
-        this.eye = new Vector3([-10, 0, 3]);
+        this.eye = new Vector3([25, 3, 7]);
         this.at = new Vector3([0, 0, -100]);
         this.up = new Vector3([0, 1, 0]);
         this.lastMouseX = null;
@@ -76,7 +76,7 @@ class Camera {
     }
 
     panRight() {
-        this.turnLeft(-5);
+        this.panLeft(-5);
     }
     onMouseMove(event) {
         // below debugged with https://chat.openai.com/

@@ -5,26 +5,32 @@
     <title>Blocky World</title>
     <link rel="shortcut icon" href="#">
   </head>
-
+  <audio autoplay loop>
+    <source src="key.mp3" type="audio/mpeg"> <!-- https://downloads.khinsider.com/game-soundtracks/album/minecraft/1-01.%2520Key.mp3 (from here, originally from C418)-->
+    browser doesn't support audio
+  </audio>
   <body onload="main()">
+    <style>
+      body {
+        overflow: hidden;
+      }
+    </style>
   <!-- <body> -->
     <canvas id="webgl" width="600" height="600">
     Please use a browser that supports "canvas"
     </canvas>
 <br></br>
     <p id="logging"></p>
-    <br></br>
     <p>
       Camera Angle <input type="range" min="-180" max="180" value="20" class="slider" id="angleSlide">
     </p>
     <h1>Notes to Grader</h1>
-    <p>Spacebar for up, Shift for down</p>
-    <p>WASD + QE for movement as per assignment</p>
-    <p>Use camera angle slider help turn if desired</p>
-    <p>GAME: The game is simple. You are Steve trying to find the hidden Minecraft crystal to open 
+    <p>Spacebar for up, Shift for down. WASD + QE for movement as per assignment. Use camera angle slider help turn if desired</p>
+    <p><b>GAME:</b> The game is simple. You are Steve trying to find the hidden Minecraft crystal to open 
       a portal to the real world. Find the crystal!
     </p>
     <p>Textures on floor, sky, cubes, and color on crystal.</p>
+    <p>Intended <b>"WOW" factor</b>—turn volume up if desired, Key from Minecraft is playing in the background :] </p>
     <br></br>
 
     <script src="../lib/webgl-utils.js"></script>
