@@ -33,6 +33,11 @@ function drawTriangle(vertices) {
 }
 
 function drawTriangle3D(vertices, vertexBuffer) {
+  var n = vertices.length / 3;
+  if (uv.length / 2 !== n || normals.length / 3 !== n) {
+    console.error('Mismatch in buffer lengths: vertex count is inconsistent.');
+    return -1;
+  }
   var n = 3; // The number of vertices
   // var vertexBuffer = gl.createBuffer();
   if (!vertexBuffer) {
@@ -48,6 +53,11 @@ function drawTriangle3D(vertices, vertexBuffer) {
 }
 
 function drawTriangle3DUV(vertices, uv, vertexBuffer) {
+  var n = vertices.length / 3;
+  if (uv.length / 2 !== n || normals.length / 3 !== n) {
+    console.error('Mismatch in buffer lengths: vertex count is inconsistent.');
+    return -1;
+  }
   // var vertexBuffer = gl.createBuffer();
   if (!vertexBuffer) {
     console.log('Failed to create the buffer object');
@@ -69,13 +79,14 @@ function drawTriangle3DUV(vertices, uv, vertexBuffer) {
   gl.drawArrays(gl.TRIANGLES,0,vertices.length/3);
 }
 
-function drawTriangle3DUVNormal(vertices, uv, vertexBuffer, normals) {
-  var n = vertices.length/3;
+function drawTriangle3DUVNormal(vertices, uv, normals) {
   var vertexBuffer = gl.createBuffer();
   if (!vertexBuffer) {
-    console.log('Failed to create the buffer object');
+    console.log('failed to create vertexBuffer');
     return -1;
   }
+  
+  var n = vertices.length/3;
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.DYNAMIC_DRAW);
   gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0);
@@ -89,6 +100,7 @@ function drawTriangle3DUVNormal(vertices, uv, vertexBuffer, normals) {
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uv), gl.DYNAMIC_DRAW);
   gl.vertexAttribPointer(a_UV, 2, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(a_UV);
+  // gl.drawArrays(gl.TRIANGLES,0,vertices.length/3);
   var normalBuffer = gl.createBuffer();
   if (!normalBuffer) {console.log('Failed to create buffer object');
   return -1;}
@@ -96,6 +108,6 @@ function drawTriangle3DUVNormal(vertices, uv, vertexBuffer, normals) {
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.DYNAMIC_DRAW);
   gl.vertexAttribPointer(a_Normal, 3, gl.FLOAT, false, 0,0);
   gl.enableVertexAttribArray(a_Normal);
-  gl.drawArrays(gl.TRIANGLES,0,vertices.length/3);
+  gl.drawArrays(gl.TRIANGLES,0,n);
   g_vertexBuffer=null;
 }

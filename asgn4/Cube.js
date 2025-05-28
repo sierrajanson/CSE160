@@ -21,98 +21,34 @@ class Cube{
         gl.uniform4f(u_FragColor, r,g,b,a);
         gl.uniformMatrix4fv(u_ModelMatrix, false, this.matrix.elements);
         var x = 1;
-gl.uniform4f(u_FragColor, r * 0.9, g * 0.9, b * 0.9, a);
-        drawTriangle3DUVNormal([0,0,0, x,0,0, x,x,0], [0,0, 1,0, 1,1], this.vertexBuffer, [0,0,-1, 0,0,-1, 0,0,-1]);
-        drawTriangle3DUVNormal([0,0,0, x,x,0, 0,x,0], [0,0, 1,1, 0,1], this.vertexBuffer, [0,0,-1, 0,0,-1, 0,0,-1],);
+        gl.uniform4f(u_FragColor, r * 0.9, g * 0.9, b * 0.9, a);
+        drawTriangle3DUVNormal([0,0,0, x,0,0, x,x,0], [0,0, 1,0, 1,1], [0,0,-1, 0,0,-1, 0,0,-1]);
+        drawTriangle3DUVNormal([0,0,0, x,x,0, 0,x,0], [0,0, 1,1, 0,1], [0,0,-1, 0,0,-1, 0,0,-1],);
 
         // BACK FACE (z = x)
         gl.uniform4f(u_FragColor, r * 0.8, g * 0.8, b * 0.8, a);
-        drawTriangle3DUVNormal([0,0,x, 0,x,x, x,x,x], [0,0, 0,1, 1,1], this.vertexBuffer, [0,0,1, 0,0,1, 0,0,1]);
-        drawTriangle3DUVNormal([0,0,x, x,x,x, x,0,x], [0,0, 1,1, 1,0], this.vertexBuffer, [0,0,1, 0,0,1, 0,0,1]);
+        drawTriangle3DUVNormal([0,0,x, 0,x,x, x,x,x], [0,0, 0,1, 1,1], [0,0,1, 0,0,1, 0,0,1]);
+        drawTriangle3DUVNormal([0,0,x, x,x,x, x,0,x], [0,0, 1,1, 1,0], [0,0,1, 0,0,1, 0,0,1]);
 
         // RIGHT FACE (x = x)
         gl.uniform4f(u_FragColor, r * 0.8, g * 0.8, b * 0.8, a);
-        drawTriangle3DUVNormal([x,0,0, x,x,0, x,x,x], [0,0, 0,1, 1,1], this.vertexBuffer, [1,0,0, 1,0,0, 1,0,0]);
-        drawTriangle3DUVNormal([x,0,0, x,x,x, x,0,x], [0,0, 1,1, 1,0], this.vertexBuffer,[1,0,0, 1,0,0, 1,0,0]);
+        drawTriangle3DUVNormal([x,0,0, x,x,0, x,x,x], [0,0, 0,1, 1,1], [1,0,0, 1,0,0, 1,0,0]);
+        drawTriangle3DUVNormal([x,0,0, x,x,x, x,0,x], [0,0, 1,1, 1,0],[1,0,0, 1,0,0, 1,0,0]);
 
         // LEFT FACE (x = 0)   
         gl.uniform4f(u_FragColor, r * 0.8, g * 0.8, b * 0.8, a);
-        drawTriangle3DUVNormal([0,0,0, 0,0,x, 0,x,x], [0,0, 1,0, 1,1], this.vertexBuffer,[-1,0,0, -1,0,0, -1,0,0]);
-        drawTriangle3DUVNormal([0,0,0, 0,x,x, 0,x,0], [0,0, 1,1, 0,1], this.vertexBuffer,[-1,0,0, -1,0,0, -1,0,0]);
+        drawTriangle3DUVNormal([0,0,0, 0,0,x, 0,x,x], [0,0, 1,0, 1,1],[-1,0,0, -1,0,0, -1,0,0]);
+        drawTriangle3DUVNormal([0,0,0, 0,x,x, 0,x,0], [0,0, 1,1, 0,1],[-1,0,0, -1,0,0, -1,0,0]);
 
         // TOP FACE (y = x)
         gl.uniform4f(u_FragColor, r * 0.7, g * 0.7, b * 0.7, a);
-        drawTriangle3DUVNormal([0,x,0, 0,x,x, x,x,x], [0,0, 0,1, 1,1], this.vertexBuffer,[0,1,0, 0,1,0, 0,1,0]);
-        drawTriangle3DUVNormal([0,x,0, x,x,x, x,x,0], [0,0, 1,1, 1,0], this.vertexBuffer,[0,1,0, 0,1,0, 0,1,0]);
+        drawTriangle3DUVNormal([0,x,0, 0,x,x, x,x,x], [0,0, 0,1, 1,1],[0,1,0, 0,1,0, 0,1,0]);
+        drawTriangle3DUVNormal([0,x,0, x,x,x, x,x,0], [0,0, 1,1, 1,0],[0,1,0, 0,1,0, 0,1,0]);
 
         // BOTTOM FACE (y = 0)
         gl.uniform4f(u_FragColor, r * 0.7, g * 0.7, b * 0.7, a);
-        drawTriangle3DUVNormal([0,0,0, x,0,0, x,0,x], [0,0, 1,0, 1,1], this.vertexBuffer,[0,-1,0, 0,-1,0, 0,-1,0]);
-        drawTriangle3DUVNormal([0,0,0, x,0,x, 0,0,x], [0,0, 1,1, 0,1], this.vertexBuffer, [0,-1,0, 0,-1,0, 0,-1,0]);
-        // FRONT FACE (z = 0)
-        // gl.uniform4f(u_FragColor, r * 0.9, g * 0.9, b * 0.9, a);
-        // drawTriangle3DUVNormal(
-        //     [0,0,0, x,x,0, x,0,0], 
-        //     [0,0, 1,1, 1,0], 
-        //     [0,0,-1, 0,0,-1, 0,0,-1],
-        //     this.vertexBuffer);
-        // drawTriangle3DUVNormal(
-        //     [0,0,0, 0,x,0, x,x,0], 
-        //     [0,0, 0,1, 1,1], 
-        //     [0,0,-1, 0,0,-1, 0,0,-1],
-        //     this.vertexBuffer);
-
-        // // BACK FACE (z = x)
-        // gl.uniform4f(u_FragColor, r * 0.8, g * 0.8, b * 0.8, a);
-        // drawTriangle3DUVNormal(
-        //     [0,x,0, 0,x,x, x,x,x], 
-        //     [0,0, 0,1, 1,1],
-        //     [0,1,0, 0,1,0, 0,1,0],
-        //     this.vertexBuffer);
-        // drawTriangle3DUVNormal(
-        //     [0,x,0, x,x,x, x,x,0], 
-        //     [0,0, 1,1, 1,0], 
-        //     [0,1,0, 0,1,0, 0,1,0],
-        //     this.vertexBuffer);
-
-        // // RIGHT FACE (x = x)
-        // gl.uniform4f(u_FragColor, r * 0.8, g * 0.8, b * 0.8, a);
-        // drawTriangle3DUVNormal([x,x,0, x,x,x, x,0,0], 
-        //     [0,0, 0,1, 1,1], 
-        //     [1,0,0, 1,0,0, 1,0,0],
-        //     this.vertexBuffer);
-        // drawTriangle3DUVNormal([x,0,0, x,x,x, x,0,x], 
-        //     [0,0, 1,1, 1,0], 
-        //     [1,0,0, 1,0,0, 1,0,0],this.vertexBuffer);
-
-        // // LEFT FACE (x = 0)   
-        // gl.uniform4f(u_FragColor, r * 0.8, g * 0.8, b * 0.8, a);
-        // drawTriangle3DUVNormal(
-        //     [0,x,0, 0,x,x, 0,0,0], 
-        //     [0,0, 0,1, 1,1], 
-        //     [-1,0,0, -1,0,0, -1,0,0],
-        //     this.vertexBuffer);
-        // drawTriangle3DUVNormal(
-        //     [0,0,0, 0,x,x, 0,0,x], 
-        //     [0,0, 1,1, 1,0], 
-        //     [-1,0,0, -1,0,0, -1,0,0],            
-        //     this.vertexBuffer);
-
-        // // TOP FACE (y = x)
-        // gl.uniform4f(u_FragColor, r * 0.7, g * 0.7, b * 0.7, a);
-        // drawTriangle3DUVNormal([0,x,0, 0,x,x, x,x,x], 
-        //     [0,0, 0,1, 1,1], 
-        //     [0,1,0, 0,1,0, 0,1,0],
-        //     this.vertexBuffer);
-        // drawTriangle3DUVNormal(
-        //     [0,x,0, x,x,x, x,x,0], 
-        //     [0,-1,0, 0,-1,0, 0,-1,0],
-        //     this.vertexBuffer);
-
-        // // BOTTOM FACE (y = 0)
-        // gl.uniform4f(u_FragColor, r * 0.7, g * 0.7, b * 0.7, a);
-        // drawTriangle3DUVNormal([0,0,0, 0,0,x, x,0,x], [0,0, 0,1, 1,1], this.vertexBuffer);
-        // drawTriangle3DUVNormal([0,0,0, x,0,0, x,0,x], [0,0, 1,0, 1,1], this.vertexBuffer);
+        drawTriangle3DUVNormal([0,0,0, x,0,0, x,0,x], [0,0, 1,0, 1,1],[0,-1,0, 0,-1,0, 0,-1,0]);
+        drawTriangle3DUVNormal([0,0,0, x,0,x, 0,0,x], [0,0, 1,1, 0,1], [0,-1,0, 0,-1,0, 0,-1,0]);
     }
     renderfaster() {
         var savedVerts = [0,0,0, 1,0,0, 1,1,0,0,0,0, 1,1,0, 0,1,0, 0,0,1, 0,1,1, 1,1,1, 0,0,1, 1,1,1, 1,0,1, 1,0,0, 1,1,0, 1,1,1, 1,0,0, 1,1,1, 1,0,1, 0,0,0, 0,0,1, 0,1,1,0,0,0, 0,1,1, 0,1,0,0,1,0, 0,1,1, 1,1,1,0,1,0, 1,1,1, 1,1,0, 0,0,0, 1,0,0, 1,0,1, 0,0,0, 1,0,1, 0,0,1];

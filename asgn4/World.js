@@ -166,6 +166,7 @@ let midSlideAngle = 70;
 let gunSlideAngle = 1;
 let animationOn = false;
 let poke = false;
+let g_normalOn = false;
 function addActionsForHtmlUI(){
   document.addEventListener('mousemove', (e) => camera.onMouseMove(e));
   document.getElementById('angleSlide').addEventListener('mousemove', function(ev){
@@ -173,6 +174,13 @@ function addActionsForHtmlUI(){
 
     renderScene();
   });
+  document.getElementById('normalOn').onclick = function() {
+    g_normalOn = true;
+  }
+  document.getElementById('normalOff').onclick = function() {
+    g_normalOn = false; 
+  }
+
 }
   var g_startTime = performance.now()/1000.0;
   var g_seconds = performance.now()/1000.0 - g_startTime;
@@ -441,11 +449,11 @@ var g_map = [
 
 
 function drawMap() {
-  var block = new Cube();
-  block.textureNum = 3;
-  block.matrix.translate(0,-0.5,0);
-  block.matrix.scale(0.15,0.15,0.15);
-  block.renderfaster();
+  // var block = new Cube();
+  // block.textureNum = 3;
+  // block.matrix.translate(0,-0.5,0);
+  // block.matrix.scale(0.15,0.15,0.15);
+  // block.renderfaster();
   // for (y=0; y<g_map.length; y++) {
   //   for (x=0;x<g_map[0].length;x++) {
   //     for (z=0; z<g_map[0].length;z++) {
@@ -484,9 +492,9 @@ function renderScene(){
   //   g_shapesList[i].render();
   // }
   var sky = new Cube();
-  sky.color = [1,0,0,1];
-  sky.textureNum=-3;
-  sky.matrix.scale(5,5,5);
+  if (g_normalOn) {sky.textureNum=-3;}
+  else {sky.textureNum = -2;}
+  sky.matrix.scale(-5,-5,-5);
   sky.matrix.translate(-.5,-.5,-.5);
   sky.render();
 
@@ -499,15 +507,22 @@ function renderScene(){
   floor.render();
 
   // non image textures will load first, others after
-  var b = new Cube(); // rainbow
-  b.color = [1,0,1,1];
-  b.matrix.translate(0,0,0,0);
-  b.matrix.scale(1,1,1);
-  b.textureNum = -1;
-  b.render();
-  drawMap();
+  // var b = new Cube(); // rainbow
+  // b.color = [1,0,1,1];
+  // b.matrix.translate(0,0,0,0);
+  // b.matrix.scale(1,1,1);
+  // if (g_normalOn) {b.textureNum=-3;}
+  // else {b.textureNum = -1;}
+  // b.render();
+  var s = new Sphere();
+  s.color = [1,1,0,1];
+  s.matrix.scale(1,1,1);
+  s.render();
+
+  // drawMap();
   var duration = performance.now() - startTime;
   sendTextToHTML(" ms: " + Math.floor(duration) + " fps: " + Math.floor(1000/duration), 'logging');
+
 }
 
 function click(ev) {
