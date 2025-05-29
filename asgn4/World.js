@@ -33,6 +33,7 @@ const FSHADER_SOURCE = `
   uniform sampler2D u_Sampler2;
   uniform sampler2D u_Sampler3;
 
+  uniform vec3 u_cameraPos;
   uniform vec3 u_lightPos;
   varying vec4 v_VertPos;
   uniform int u_whichTexture;
@@ -54,13 +55,26 @@ const FSHADER_SOURCE = `
      } else {
       gl_FragColor = vec4(1,.2,.2,1); // Error --> red-ish
     }
-    vec3 lightVector = vec3(v_VertPos)-u_lightPos;
+    vec3 lightVector = u_lightPos-vec3(v_VertPos);
+    // vec3 lightVector = vec3(v_VertPos)-u_lightPos;
     float r = length(lightVector);
-    if (r<1.0) {
-      gl_FragColor = vec4(1,0,0,1);
-    } else if (r < 2.0) {
-      gl_FragColor = vec4(0,1,0,1); 
-    } 
+    // light fall off
+    // gl_FragColor = vec4(vec3(gl_FragColor)/(r*r),1);
+    // n dot L
+    vec3 L = normalize(lightVector);
+    vec3 N = normalize(v_Normal);
+    float nDotL = max(dot(N,L), 0.0);
+    // gl_FragColor = gl_FragColor * nDotL;
+    // gl_FragColor.a = 1.0;
+    vec3 R = reflect(-L, N);
+    vec3 E = normalize(u_cameraPos-vec3(v_VertPos));
+    float specular = pow(max(dot(E,R), 0.0), 15.0);
+
+    vec3 diffuse = vec3(gl_FragColor) * nDotL * 0.7;
+    vec3 ambient = vec3(gl_FragColor) * 0.3;
+    gl_FragColor = vec4(specular+diffuse+ambient,1.0);
+
+
   }`;
 
 let canvas;
@@ -131,6 +145,11 @@ function connectVariablesToGLSL() {
     if (a_Normal < 0) {
       console.log('Failed to get the storage location of a_Normal');
       return;
+    }
+    u_cameraPos = gl.getUniformLocation(gl.program, 'u_cameraPos');
+    if (!u_cameraPos) {
+      console.log('Failed to get the storage location of u_cameraPos');
+      return false;
     }
     u_Sampler0 = gl.getUniformLocation(gl.program, 'u_Sampler0');
     if (!u_Sampler0) {
@@ -216,7 +235,7 @@ function updateAnimationAngles() {
     g_seconds = performance.now()/1000.0 - g_startTime;
     // console.log(g_seconds);
     renderScene();
-    updateAnimationAngles();
+    // updateAnimationAngles();
     requestAnimationFrame(tick);
   }
 
@@ -413,6 +432,7 @@ function renderScene(){
   // floor.matrix.translate(-.5,0,-0.5);
   // floor.render();
   gl.uniform3f(u_lightPos, g_lightPos[0], g_lightPos[1], g_lightPos[2]);
+  gl.uniform3f(u_cameraPos, g_eye[0], g_eye[1], g_eye[2]);
   var light = new Cube();
   light.color = [1,1,0,1];
   if (g_normalOn) {light.textureNum=-3;}
