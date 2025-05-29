@@ -207,11 +207,16 @@ function addActionsForHtmlUI(){
 }
   var g_startTime = performance.now()/1000.0;
   var g_seconds = performance.now()/1000.0 - g_startTime;
-
+function updateAnimationAngles() {
+  g_lightPos[0] = Math.cos(g_seconds);
+  g_lightPos[1] = Math.sin(g_seconds);
+  g_lightPos[2] = Math.sin(g_seconds);
+}
   function tick() {
     g_seconds = performance.now()/1000.0 - g_startTime;
     // console.log(g_seconds);
     renderScene();
+    updateAnimationAngles();
     requestAnimationFrame(tick);
   }
 
