@@ -38,6 +38,9 @@ const FSHADER_SOURCE = `
   varying vec4 v_VertPos;
   uniform int u_whichTexture;
   uniform bool u_lightOn;
+  uniform bool u_spotLightOn;
+  uniform vec3 u_spotDirection;
+  uniform float u_spotCutoff;
   void main() {
     if (u_whichTexture == -3) {
     gl_FragColor = vec4((v_Normal+1.0)/2.0, 1.0);
@@ -80,8 +83,15 @@ const FSHADER_SOURCE = `
         gl_FragColor = vec4(diffuse+ambient, 1.0);
        }
     }
-
-
+    
+    if (u_spotLightOn && u_lightOn) {
+      float spotEffect = dot(normalize(-lightVector), normalize(u_spotDirection));
+      if (spotEffect > u_spotCutoff) {
+        // has spotlight effect
+      } else {
+        gl_FragColor = vec4(vec3(gl_FragColor) * 0.1, 1.0);
+      }
+    }
   }`;
 
 let canvas;
@@ -102,6 +112,10 @@ let camera;
 let a_Normal;
 let u_lightPos;
 let u_lightOn;
+let u_spotLightOn = false;
+let spotDir = [0, -1, 0]; 
+let cutoff = Math.cos((15 * Math.PI) / 180); 
+
 function setupWebGL() {
     canvas = document.getElementById('webgl');
     gl = canvas.getContext("webgl",{preserveDrawingBuffer: true});
@@ -164,6 +178,11 @@ function connectVariablesToGLSL() {
       console.log('Failed to get the storage location of u_cameraPos');
       return false;
     }
+    u_spotLightOn = gl.getUniformLocation(gl.program, 'u_spotLightOn');
+    if (!u_spotLightOn) {
+      console.log('Failed to get the storage location of u_spotLightOn');
+      return false;
+    }
     u_Sampler0 = gl.getUniformLocation(gl.program, 'u_Sampler0');
     if (!u_Sampler0) {
       console.log('Failed to get the storage location of u_Sampler0');
@@ -219,6 +238,7 @@ let poke = false;
 let g_normalOn = false;
 let g_lightPos=[0,1,-2];
 let g_lightOn = true;
+let g_spotLightOn = false;
 function addActionsForHtmlUI(){
   document.addEventListener('mousemove', (e) => camera.onMouseMove(e));
   // document.getElementById('angleSlide').addEventListener('mousemove', function(ev){
@@ -237,6 +257,12 @@ function addActionsForHtmlUI(){
   }
   document.getElementById('lightOff').onclick = function() {
     g_lightOn = false; 
+  }
+  document.getElementById('spotLightOn').onclick = function() {
+    g_spotLightOn = true; 
+  }
+  document.getElementById('spotLightOff').onclick = function() {
+    g_spotLightOn = false; 
   }
   document.getElementById('lightSlideX').addEventListener('mousemove', function(ev){if (ev.buttons == 1){g_lightPos[0] = this.value/100; renderScene();}});
   document.getElementById('lightSlideY').addEventListener('mousemove', function(ev){if (ev.buttons == 1){g_lightPos[1] = this.value/100; renderScene();}});
@@ -454,7 +480,9 @@ function renderScene(){
   gl.uniform3f(u_lightPos, g_lightPos[0], g_lightPos[1], g_lightPos[2]);
   gl.uniform3f(u_cameraPos, g_eye[0], g_eye[1], g_eye[2]);
   gl.uniform1i(u_lightOn, g_lightOn);
-
+  gl.uniform1i(u_spotLightOn, g_spotLightOn);
+  gl.uniform3fv(gl.getUniformLocation(gl.program, 'u_spotDirection'), spotDir);
+  gl.uniform1f(gl.getUniformLocation(gl.program, 'u_spotCutoff'), cutoff);
   var aCube = new Cube();
   aCube.color = [0,1,1,1];
   if (g_normalOn) {aCube.textureNum=-3;}
