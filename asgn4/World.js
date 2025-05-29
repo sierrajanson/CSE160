@@ -37,6 +37,7 @@ const FSHADER_SOURCE = `
   uniform vec3 u_lightPos;
   varying vec4 v_VertPos;
   uniform int u_whichTexture;
+  uniform bool u_lightOn;
   void main() {
     if (u_whichTexture == -3) {
     gl_FragColor = vec4((v_Normal+1.0)/2.0, 1.0);
@@ -72,7 +73,13 @@ const FSHADER_SOURCE = `
 
     vec3 diffuse = vec3(gl_FragColor) * nDotL * 0.7;
     vec3 ambient = vec3(gl_FragColor) * 0.3;
-    gl_FragColor = vec4(specular+diffuse+ambient,1.0);
+    if (u_lightOn) {
+      if (u_whichTexture == -2) { // ball (normally colored objects)
+        gl_FragColor = vec4(specular+diffuse+ambient,1.0);
+      } else {
+        gl_FragColor = vec4(diffuse+ambient, 1.0);
+       }
+    }
 
 
   }`;
@@ -94,6 +101,7 @@ let u_Sampler3;
 let camera;
 let a_Normal;
 let u_lightPos;
+let u_lightOn;
 function setupWebGL() {
     canvas = document.getElementById('webgl');
     gl = canvas.getContext("webgl",{preserveDrawingBuffer: true});
@@ -124,6 +132,11 @@ function connectVariablesToGLSL() {
     u_lightPos = gl.getUniformLocation(gl.program, 'u_lightPos');
     if (!u_lightPos) {
       console.log('failed to get storage location of u_lightPos');
+      return;
+    }
+    u_lightOn = gl.getUniformLocation(gl.program, 'u_lightOn');
+    if (!u_lightOn) {
+      console.log('failed to get storage location of u_lightOn');
       return;
     }
     u_ModelMatrix = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
@@ -205,19 +218,25 @@ let animationOn = false;
 let poke = false;
 let g_normalOn = false;
 let g_lightPos=[0,1,-2];
-
+let g_lightOn = true;
 function addActionsForHtmlUI(){
   document.addEventListener('mousemove', (e) => camera.onMouseMove(e));
-  document.getElementById('angleSlide').addEventListener('mousemove', function(ev){
-    // g_globalAngleX = this.value;
+  // document.getElementById('angleSlide').addEventListener('mousemove', function(ev){
+  //   // g_globalAngleX = this.value;
 
-    renderScene();
-  });
+  //   renderScene();
+  // });
   document.getElementById('normalOn').onclick = function() {
     g_normalOn = true;
   }
   document.getElementById('normalOff').onclick = function() {
     g_normalOn = false; 
+  }
+  document.getElementById('lightOn').onclick = function() {
+    g_lightOn = true; 
+  }
+  document.getElementById('lightOff').onclick = function() {
+    g_lightOn = false; 
   }
   document.getElementById('lightSlideX').addEventListener('mousemove', function(ev){if (ev.buttons == 1){g_lightPos[0] = this.value/100; renderScene();}});
   document.getElementById('lightSlideY').addEventListener('mousemove', function(ev){if (ev.buttons == 1){g_lightPos[1] = this.value/100; renderScene();}});
@@ -235,7 +254,7 @@ function updateAnimationAngles() {
     g_seconds = performance.now()/1000.0 - g_startTime;
     // console.log(g_seconds);
     renderScene();
-    // updateAnimationAngles();
+    updateAnimationAngles();
     requestAnimationFrame(tick);
   }
 
@@ -419,20 +438,32 @@ function renderScene(){
   var sky = new Cube();
   sky.color = [0,1,1,1];
   if (g_normalOn) {sky.textureNum=-3;}
-  else {sky.textureNum = -2;}
+  else {sky.textureNum = 2;}
   sky.matrix.scale(-5,-5,-5);
   sky.matrix.translate(-.5,-.5,-.5);
   sky.render();
 
-  // var floor = new Cube(1);
+  var floor = new Cube();
+  floor.textureNum = 1;
   // floor.color = [0,1,0,1];
-  // // floor.textureNum = 1;/
-  // floor.matrix.translate(0,-0.75,0);
-  // floor.matrix.scale(2.5,0,2.5);
-  // floor.matrix.translate(-.5,0,-0.5);
-  // floor.render();
+  floor.matrix.translate(0,-2,0);
+  floor.matrix.scale(7.5,0.01,7.5);
+  floor.matrix.translate(-.5,0,-0.5);
+  floor.render();
+
   gl.uniform3f(u_lightPos, g_lightPos[0], g_lightPos[1], g_lightPos[2]);
   gl.uniform3f(u_cameraPos, g_eye[0], g_eye[1], g_eye[2]);
+  gl.uniform1i(u_lightOn, g_lightOn);
+
+  var aCube = new Cube();
+  aCube.color = [0,1,1,1];
+  if (g_normalOn) {aCube.textureNum=-3;}
+  else {aCube.textureNum = 3;}
+  aCube.matrix.translate(-1.5,-1.5,-1.5);
+  aCube.matrix.scale(0.5,0.5,0.5);
+  aCube.matrix.translate(-1,0,-.5);
+  aCube.render();
+
   var light = new Cube();
   light.color = [1,1,0,1];
   if (g_normalOn) {light.textureNum=-3;}
@@ -441,19 +472,12 @@ function renderScene(){
   light.matrix.scale(.1,.1,.1);
   light.matrix.translate(-.5,-.5,-.5);
   light.render();
-  // non image textures will load first, others after
-  // var b = new Cube(); // rainbow
-  // b.color = [1,0,1,1];
-  // b.matrix.translate(0,0,0,0);
-  // b.matrix.scale(1,1,1);
-  // if (g_normalOn) {b.textureNum=-3;}
-  // else {b.textureNum = -1;}
-  // b.render();
+
   var s = new Sphere();
   if (g_normalOn) {s.textureNum=-3;}
   else {s.textureNum = -2;}
   s.color = [1,1,0,1];
-  s.matrix.scale(1,1,1);
+  s.matrix.scale(0.6,0.6,0.6);
   s.render();
 
   // drawMap();
