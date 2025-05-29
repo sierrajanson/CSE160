@@ -477,6 +477,7 @@ function renderScene(){
   if (g_normalOn) {s.textureNum=-3;}
   else {s.textureNum = -2;}
   s.color = [1,1,0,1];
+  s.matrix.translate(1.5,-1,-1);
   s.matrix.scale(0.6,0.6,0.6);
   s.render();
 
