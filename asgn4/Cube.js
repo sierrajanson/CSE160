@@ -17,7 +17,7 @@ class Cube{
             };
         }
         let [r,g,b,a] = this.color;
-        gl.uniform1i(u_whichTexture, this.textureNum);
+          gl.uniform1i(u_whichTexture, this.textureNum);
         gl.uniform4f(u_FragColor, r,g,b,a);
         gl.uniformMatrix4fv(u_ModelMatrix, false, this.matrix.elements);
         var x = 1;
