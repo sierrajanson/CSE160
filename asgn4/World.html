@@ -26,6 +26,10 @@
       Light Y <input type="range" min="-250" max="250" value="100" class="slider" id="lightSlideY">
       Light Z <input type="range" min="-250" max="250" value="-200" class="slider" id="lightSlideZ">
     </p>
+    Red Slide <input type="range" id="redSlider" min="0" max="1" step="0.01" value="0.9">
+    Green Slide <input type="range" id="greenSlider" min="0" max="1" step="0.01" value="0.9">
+    Blue Slide <input type="range" id="blueSlider" min="0" max="1" step="0.01" value="0.9">
+
     <button id="normalOn">Normal On</button>
     <button id="normalOff">Normal Off</button>
     <button id="lightOn">Light On</button>
@@ -33,7 +37,7 @@
     <button id="spotLightOn">SpotLight On (will overpower other lighting)</button>
     <button id="spotLightOff">SpotLight Off</button>
 
-    <p>Slider controls will allow you to quickly move light but animation will quickly bring it back to its rotation since it's based on seconds.</p>
+    <p>Position Slider controls will allow you to quickly move light but animation will quickly bring it back to its rotation since it's based on seconds.</p>
     <p>This would be more apparent if I just made the lighting go in a line but I thought the circular 3D lighting animation was cool.</p>
     <p>Set in minecraft world (with floor, sky, and example cube). Shift to go down, WASD, space to go up, Q&E to rotate.</p>
     <script src="../lib/webgl-utils.js"></script>

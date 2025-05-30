@@ -32,7 +32,7 @@ const FSHADER_SOURCE = `
   uniform sampler2D u_Sampler1;
   uniform sampler2D u_Sampler2;
   uniform sampler2D u_Sampler3;
-
+  uniform vec3 u_lightColor;
   uniform vec3 u_cameraPos;
   uniform vec3 u_lightPos;
   varying vec4 v_VertPos;
@@ -74,11 +74,11 @@ const FSHADER_SOURCE = `
     vec3 E = normalize(u_cameraPos-vec3(v_VertPos));
     float specular = pow(max(dot(E,R), 0.0), 15.0);
 
-    vec3 diffuse = vec3(gl_FragColor) * nDotL * 0.7;
+    vec3 diffuse = vec3(gl_FragColor) * nDotL * 0.7 * u_lightColor;
     vec3 ambient = vec3(gl_FragColor) * 0.3;
     if (u_lightOn) {
       if (u_whichTexture == -2) { // ball (normally colored objects)
-        gl_FragColor = vec4(specular+diffuse+ambient,1.0);
+        gl_FragColor = vec4(specular*u_lightColor+diffuse+ambient,1.0);
       } else {
         gl_FragColor = vec4(diffuse+ambient, 1.0);
        }
@@ -115,6 +115,7 @@ let u_lightOn;
 let u_spotLightOn = false;
 let spotDir = [0, -1, 0]; 
 let cutoff = Math.cos((15 * Math.PI) / 180); 
+let uLightColorLoc;
 
 function setupWebGL() {
     canvas = document.getElementById('webgl');
@@ -129,6 +130,11 @@ function setupWebGL() {
 function connectVariablesToGLSL() {
     if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
       console.log('Failed to intialize shaders.');
+      return;
+    }
+    uLightColorLoc = gl.getUniformLocation(gl.program, 'u_lightColor');
+    if (!uLightColorLoc) {
+      console.log('err');
       return;
     }
     // Get the storage location of a_Position
@@ -239,6 +245,21 @@ let g_normalOn = false;
 let g_lightPos=[0,1,-2];
 let g_lightOn = true;
 let g_spotLightOn = false;
+let g_colorSlide = 0;
+let redSliderValue = 1;
+let greenSliderValue = 1;
+let blueSliderValue = 1;
+
+function updateLightColor() {
+  const r = parseFloat(document.getElementById("redSlider").value);
+  const g = parseFloat(document.getElementById("greenSlider").value);
+  const b = parseFloat(document.getElementById("blueSlider").value);
+  redSliderValue = r;
+  greenSliderValue = g;
+  blueSliderValue = b;
+  gl.uniform3f(uLightColorLoc, r, g, b);
+}
+
 function addActionsForHtmlUI(){
   document.addEventListener('mousemove', (e) => camera.onMouseMove(e));
   // document.getElementById('angleSlide').addEventListener('mousemove', function(ev){
@@ -246,6 +267,11 @@ function addActionsForHtmlUI(){
 
   //   renderScene();
   // });
+
+  document.getElementById("redSlider").oninput = updateLightColor;
+  document.getElementById("greenSlider").oninput = updateLightColor;
+  document.getElementById("blueSlider").oninput = updateLightColor;
+
   document.getElementById('normalOn').onclick = function() {
     g_normalOn = true;
   }
@@ -264,6 +290,7 @@ function addActionsForHtmlUI(){
   document.getElementById('spotLightOff').onclick = function() {
     g_spotLightOn = false; 
   }
+
   document.getElementById('lightSlideX').addEventListener('mousemove', function(ev){if (ev.buttons == 1){g_lightPos[0] = this.value/100; renderScene();}});
   document.getElementById('lightSlideY').addEventListener('mousemove', function(ev){if (ev.buttons == 1){g_lightPos[1] = this.value/100; renderScene();}});
   document.getElementById('lightSlideZ').addEventListener('mousemove', function(ev){if (ev.buttons == 1){g_lightPos[2] = this.value/100; renderScene();}});
@@ -483,6 +510,8 @@ function renderScene(){
   gl.uniform1i(u_spotLightOn, g_spotLightOn);
   gl.uniform3fv(gl.getUniformLocation(gl.program, 'u_spotDirection'), spotDir);
   gl.uniform1f(gl.getUniformLocation(gl.program, 'u_spotCutoff'), cutoff);
+  gl.uniform3f(uLightColorLoc, redSliderValue, greenSliderValue, blueSliderValue);
+
   var aCube = new Cube();
   aCube.color = [0,1,1,1];
   if (g_normalOn) {aCube.textureNum=-3;}
