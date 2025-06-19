@@ -305,6 +305,14 @@ function updateAnimationAngles() {
 }
   function tick() {
     g_seconds = performance.now()/1000.0 - g_startTime;
+    let teapot = new Model(gl, "bunny.obj");
+
+      teapot.color = [1,0.4,0.5,1];
+  teapot.matrix.setScale(.5,.5,.5);
+  teapot.matrix.rotate(240,0,1,0);
+  teapot.matrix.translate(0.5,0.5,0.24);
+
+  teapot.render(gl,gl.program);
     // console.log(g_seconds);
     renderScene();
     updateAnimationAngles();
@@ -467,6 +475,8 @@ function sendTextToHTML(text, htmlID) {
 function drawMap() {
   console.log('unneeded');
 }
+
+
 function renderScene(){
   var startTime = performance.now();
   var projMat = new Matrix4();
